@@ -1,0 +1,1 @@
+No API key is required for this project as it uses OpenStreetMap via Leaflet.js.
