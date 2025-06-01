@@ -10,7 +10,7 @@ export default class HomePresenter {
   async loadStories() {
     try {
       const response = await this.model.getStories();
-      const stories = response.listStory; // Sesuaikan dengan struktur API (misalnya, 'listStory' bukan 'stories')
+      const stories = response.listStory; // Sesuai struktur API Dicoding
 
       // Simpan ke IndexedDB
       await db.init();
@@ -20,21 +20,28 @@ export default class HomePresenter {
 
       await this.view.displayStories(stories);
     } catch (error) {
-      console.error("Error loading stories:", error);
-      // Coba ambil dari IndexedDB jika offline
-      await db.init();
-      const cachedStories = await db.getAllStories();
-      if (cachedStories.length > 0) {
-        this.view.displayStories(cachedStories);
+      console.error("Error loading stories:", error.message);
+      if (error.message.includes("No authentication token found")) {
         this.view.showMessage(
-          "Anda offline. Menampilkan data dari cache.",
-          null
+          "Anda belum login. Silakan login untuk melihat cerita.",
+          () => (window.location.hash = "#/login")
         );
       } else {
-        this.view.showMessage(
-          "Gagal memuat cerita: Tidak ada koneksi dan cache kosong. Silakan periksa koneksi Anda dan muat ulang halaman setelah tersambung.",
-          () => window.location.reload()
-        );
+        // Coba ambil dari IndexedDB jika offline
+        await db.init();
+        const cachedStories = await db.getAllStories();
+        if (cachedStories.length > 0) {
+          this.view.displayStories(cachedStories);
+          this.view.showMessage(
+            "Anda offline. Menampilkan data dari cache.",
+            null
+          );
+        } else {
+          this.view.showMessage(
+            "Gagal memuat cerita: Tidak ada koneksi dan cache kosong. Silakan periksa koneksi Anda dan muat ulang halaman setelah tersambung.",
+            () => window.location.reload()
+          );
+        }
       }
     }
   }

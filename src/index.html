@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Aplikasi berbagi cerita Dicoding" />
     <meta name="theme-color" content="#333333" />
-    <!-- Ditambahkan untuk PWA -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="manifest" href="/manifest.json" />
-    <!-- Ditambahkan untuk PWA -->
     <title>Dicoding Story App</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
@@ -61,6 +59,24 @@
       <p>© 2025 Dicoding Story App</p>
     </footer>
     <script>
+      const authData = JSON.parse(localStorage.getItem("auth")) || {};
+      const loginLink = document.getElementById("login-link");
+      const logoutLink = document.getElementById("logout-link");
+
+      if (authData.token) {
+        loginLink.style.display = "none";
+        logoutLink.style.display = "block";
+      } else {
+        loginLink.style.display = "block";
+        logoutLink.style.display = "none";
+        if (
+          !window.location.hash.includes("login") &&
+          !window.location.hash.includes("register")
+        ) {
+          window.location.hash = "#/login";
+        }
+      }
+
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
           .register("/sw.js", { scope: "/" })
@@ -69,7 +85,6 @@
               "Service Worker registered successfully:",
               registration
             );
-            // Minta izin notifikasi setelah registrasi
             if (Notification.permission !== "granted") {
               Notification.requestPermission().then((permission) => {
                 if (permission === "granted") {
@@ -91,6 +106,14 @@
       } else {
         console.warn("Service Workers are not supported in this browser.");
       }
+
+      logoutLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("auth");
+        loginLink.style.display = "block";
+        logoutLink.style.display = "none";
+        window.location.hash = "#/login";
+      });
     </script>
     <script type="module" src="/js/main.js"></script>
   </body>

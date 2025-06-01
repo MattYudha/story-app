@@ -1,28 +1,54 @@
-// src/js/models/story-model.js
-import { getStories, getStoryDetail, addStory, addGuestStory } from "../api.js"; // dari src/js/models/ ke src/js/api.js
-
 export default class StoryModel {
-  async getStories({ token, page = 1, size = 10, location = 1 }) {
-    const response = await getStories({ token, page, size, location });
-    if (response.error) throw new Error(response.message);
-    return response.listStory;
+  async getStories() {
+    const authData = JSON.parse(localStorage.getItem("auth")) || {};
+    const { token } = authData; // Baris 5: Destruktur dengan fallback
+
+    if (!token) {
+      throw new Error("No authentication token found. Please log in.");
+    }
+
+    const response = await fetch("https://story-api.dicoding.dev/v1/stories", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch stories");
+    }
+
+    return response.json();
   }
 
-  async getStoryDetail(id, token) {
-    const response = await getStoryDetail(id, token);
-    if (response.error) throw new Error(response.message);
-    return response.story;
-  }
+  async addStory({ name, description, photo, lat, lon }) {
+    const authData = JSON.parse(localStorage.getItem("auth")) || {};
+    const { token } = authData;
 
-  async addStory({ description, photo, lat, lon, token }) {
-    const response = await addStory({ description, photo, lat, lon, token });
-    if (response.error) throw new Error(response.message);
-    return response;
-  }
+    if (!token) {
+      throw new Error("No authentication token found. Please log in.");
+    }
 
-  async addGuestStory({ description, photo, lat, lon }) {
-    const response = await addGuestStory({ description, photo, lat, lon });
-    if (response.error) throw new Error(response.message);
-    return response;
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("photo", photo);
+    if (lat && lon) {
+      formData.append("lat", lat);
+      formData.append("lon", lon);
+    }
+
+    const response = await fetch("https://story-api.dicoding.dev/v1/stories", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to add story");
+    }
+
+    return response.json();
   }
 }
