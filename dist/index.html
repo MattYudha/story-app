@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Aplikasi berbagi cerita Dicoding" />
+    <meta name="theme-color" content="#333333" />
+    <!-- Ditambahkan untuk PWA -->
+    <link rel="icon" type="image/x-icon" href="/dicoding-story/favicon.ico" />
+    <link rel="manifest" href="/dicoding-story/manifest.json" />
+    <!-- Ditambahkan untuk PWA -->
+    <title>Dicoding Story App</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script type="module" crossorigin src="/dicoding-story/assets/index-B50yajo1.js"></script>
+    <link rel="stylesheet" crossorigin href="/dicoding-story/assets/index-C6jN_Ycd.css">
+  </head>
+  <body>
+    <a href="#main-content" class="skip-to-content" tabindex="1"
+      >Lewati ke konten</a
+    >
+    <header role="banner">
+      <h1>Dicoding Story</h1>
+      <nav role="navigation">
+        <ul>
+          <li><a href="#/home" aria-label="Ke halaman beranda">Beranda</a></li>
+          <li>
+            <a href="#/add-story" aria-label="Tambah cerita baru"
+              >Tambah Cerita</a
+            >
+          </li>
+          <li>
+            <a href="#/login" id="login-link" aria-label="Masuk ke akun"
+              >Login</a
+            >
+          </li>
+          <li>
+            <a href="#/register" aria-label="Daftar akun baru">Register</a>
+          </li>
+          <li>
+            <a
+              href="#"
+              id="logout-link"
+              style="display: none"
+              aria-label="Keluar dari akun"
+              >Logout</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main id="main-content" role="main">
+      <div id="content"></div>
+    </main>
+    <footer role="contentinfo">
+      <p>© 2025 Dicoding Story App</p>
+    </footer>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw.js", { scope: "/" })
+          .then((registration) => {
+            console.log(
+              "Service Worker registered successfully:",
+              registration
+            );
+            // Minta izin notifikasi setelah registrasi
+            if (Notification.permission !== "granted") {
+              Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                  console.log("Notification permission granted");
+                } else {
+                  console.warn("Notification permission denied");
+                }
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Service Worker registration failed:", error);
+            if (error.message.includes("Failed to register a ServiceWorker")) {
+              console.error(
+                "Possible causes: File not found, HTTPS required, or scope mismatch."
+              );
+            }
+          });
+      } else {
+        console.warn("Service Workers are not supported in this browser.");
+      }
+    </script>
+  </body>
+</html>
