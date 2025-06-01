@@ -1,7 +1,7 @@
-// src/js/views/detail.js
-import DetailPresenter from "../presenters/detail-presenter.js"; // dari src/js/views/ ke src/js/presenters/detail-presenter.js
-import { createElement } from "../utils/dom.js"; // dari src/js/views/ ke src/js/utils/dom.js
-import { getToken } from "../utils/auth.js"; // dari src/js/views/ ke src/js/utils/auth.js
+import DetailPresenter from "../presenters/detail-presenter.js";
+import { createElement } from "../utils/dom.js";
+import { getToken } from "../utils/auth.js";
+import { initMap, addMarker } from "/js/map.js"; // Tambahkan impor untuk fungsi peta
 
 export default class DetailView {
   constructor() {
@@ -46,12 +46,18 @@ export default class DetailView {
     `;
 
     if (story.lat && story.lon) {
-      this.presenter.initMap("map-detail", story.lat, story.lon, story.name);
+      const map = initMap("map-detail", story.lat, story.lon, 13);
+      addMarker(map, story.lat, story.lon, story.name);
     }
   }
 
   showMessage(message) {
     const storyDetail = document.getElementById("story-detail");
     storyDetail.innerHTML = `<p>${message}</p>`;
+  }
+
+  cleanup() {
+    // Tidak ada pembersihan khusus untuk DetailView
+    console.log("DetailView cleanup called");
   }
 }

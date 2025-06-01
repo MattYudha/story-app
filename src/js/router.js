@@ -1,11 +1,11 @@
-// src/js/router.js
-import HomeView from "./views/home.js"; // dari src/js/ ke src/js/views/home.js
-import AddStoryView from "./views/add-story.js"; // dari src/js/ ke src/js/views/add-story.js
-import DetailView from "./views/detail.js"; // dari src/js/ ke src/js/views/detail.js
-import LoginView from "./views/login.js"; // dari src/js/ ke src/js/views/login.js
-import RegisterView from "./views/register.js"; // dari src/js/ ke src/js/views/register.js
-import { navigateWithTransition } from "./utils/transition.js"; // dari src/js/ ke src/js/utils/transition.js
-import { getToken, removeToken } from "./utils/auth.js"; // dari src/js/ ke src/js/utils/auth.js
+import HomeView from "./views/home.js";
+import AddStoryView from "./views/add-story.js";
+import DetailView from "./views/detail.js";
+import LoginView from "./views/login.js";
+import RegisterView from "./views/register.js";
+import NotFoundView from "./views/not-found.js";
+import { navigateWithTransition } from "./utils/transition.js";
+import { getToken, removeToken } from "./utils/auth.js";
 
 const routes = {
   "#/home": HomeView,
@@ -13,11 +13,17 @@ const routes = {
   "#/detail/:id": DetailView,
   "#/login": LoginView,
   "#/register": RegisterView,
+  "#/not-found": NotFoundView,
 };
+
+let currentView = null;
 
 export function initRouter() {
   updateNavLinks();
   window.addEventListener("hashchange", () => {
+    if (currentView && typeof currentView.cleanup === "function") {
+      currentView.cleanup();
+    }
     updateNavLinks();
     renderPage();
   });
@@ -26,9 +32,11 @@ export function initRouter() {
     renderPage();
   });
 
-  // Handle logout
   document.getElementById("logout-link").addEventListener("click", (e) => {
     e.preventDefault();
+    if (currentView && typeof currentView.cleanup === "function") {
+      currentView.cleanup();
+    }
     removeToken();
     updateNavLinks();
     window.location.hash = "#/login";
@@ -57,19 +65,19 @@ function renderPage() {
 
   if (route) {
     const ViewClass = routes[route];
-    const view = new ViewClass();
+    currentView = new ViewClass();
 
     if (route === "#/detail/:id") {
       const match = hash.match(
         new RegExp(`^${route.replace(":id", "([^/]+)")}$`)
       );
       const id = match ? match[1] : null;
-      navigateWithTransition(() => view.init({ id }));
+      navigateWithTransition(() => currentView.init({ id }));
     } else {
-      navigateWithTransition(() => view.init());
+      navigateWithTransition(() => currentView.init());
     }
   } else {
-    const homeView = new HomeView();
-    navigateWithTransition(() => homeView.init());
+    currentView = new NotFoundView();
+    navigateWithTransition(() => currentView.init());
   }
 }

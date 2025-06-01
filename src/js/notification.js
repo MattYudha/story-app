@@ -1,4 +1,3 @@
-// src/js/utils/notification.js
 export async function showStoryNotification(description) {
   if ("Notification" in window && Notification.permission === "granted") {
     const registration = await navigator.serviceWorker.ready;
@@ -15,7 +14,9 @@ export async function subscribeUser(token) {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array("YOUR_PUBLIC_VAPID_KEY"), // Ganti dengan VAPID key yang valid dari Dicoding
+        applicationServerKey: urlBase64ToUint8Array(
+          "BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk"
+        ),
       });
 
       await subscribeNotifications(subscription, token);
@@ -36,4 +37,20 @@ function urlBase64ToUint8Array(base64String) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
+}
+
+// Fungsi placeholder untuk subscribeNotifications (sesuaikan dengan API)
+async function subscribeNotifications(subscription, token) {
+  try {
+    await fetch("https://story-api.dicoding.dev/v1/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(subscription),
+    });
+  } catch (error) {
+    console.error("Failed to subscribe to notifications:", error);
+  }
 }

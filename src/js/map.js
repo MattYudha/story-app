@@ -1,4 +1,3 @@
-// src/js/map.js
 import L from "leaflet";
 
 export function initMap(containerId, lat = -6.2, lon = 106.8, zoom = 13) {
@@ -13,6 +12,7 @@ export function initMap(containerId, lat = -6.2, lon = 106.8, zoom = 13) {
 export function addMarker(map, lat, lon, popupText) {
   const marker = L.marker([lat, lon]).addTo(map);
   marker.bindPopup(popupText).openPopup();
+  return marker; // Pastikan marker dikembalikan
 }
 
 export function onMapClick(map, callback) {

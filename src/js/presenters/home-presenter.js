@@ -1,6 +1,5 @@
-// src/js/presenters/home-presenter.js
-import StoryModel from "../models/story-model.js"; // dari src/js/presenters/ ke src/js/models/story-model.js
-import { initMap, addMarker } from "../map.js"; // dari src/js/presenters/ ke src/js/map.js
+import StoryModel from "../models/story-model.js";
+import { db } from "../db.js";
 
 export default class HomePresenter {
   constructor(view) {
@@ -10,40 +9,40 @@ export default class HomePresenter {
 
   async loadStories() {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        this.view.showMessage("Silakan login terlebih dahulu!", () => {
-          window.location.hash = "#/login";
-        });
-        return;
+      const response = await this.model.getStories();
+      const stories = response.listStory; // Sesuai struktur API Dicoding
+
+      // Simpan ke IndexedDB
+      await db.init();
+      for (const story of stories) {
+        await db.saveStory(story);
       }
 
-      const response = await this.getStories(token);
-      if (response.error) {
-        throw new Error(response.message);
-      }
-
-      this.view.displayStories(response);
+      await this.view.displayStories(stories);
     } catch (error) {
-      this.view.showMessage(`Gagal memuat cerita: ${error.message}`, () => {
-        this.loadStories();
-      });
-    }
-  }
-
-  async getStories(token) {
-    return await this.model.getStories({
-      token,
-      page: 1,
-      size: 10,
-      location: 1,
-    });
-  }
-
-  initMap(containerId, lat, lon, popupText) {
-    if (lat && lon) {
-      const map = initMap(containerId, lat, lon, 13);
-      addMarker(map, lat, lon, popupText);
+      console.error("Error loading stories:", error.message);
+      if (error.message.includes("No authentication token found")) {
+        this.view.showMessage(
+          "Anda belum login. Silakan login untuk melihat cerita.",
+          () => (window.location.hash = "#/login")
+        );
+      } else {
+        // Coba ambil dari IndexedDB jika offline
+        await db.init();
+        const cachedStories = await db.getAllStories();
+        if (cachedStories.length > 0) {
+          this.view.displayStories(cachedStories);
+          this.view.showMessage(
+            "Anda offline. Menampilkan data dari cache.",
+            null
+          );
+        } else {
+          this.view.showMessage(
+            "Gagal memuat cerita: Tidak ada koneksi dan cache kosong. Silakan periksa koneksi Anda dan muat ulang halaman setelah tersambung.",
+            () => window.location.reload()
+          );
+        }
+      }
     }
   }
 }

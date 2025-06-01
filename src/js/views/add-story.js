@@ -1,4 +1,3 @@
-// src/js/views/add-story.js
 import AddStoryPresenter from "../presenters/add-story-presenter.js";
 import { createElement } from "../utils/dom.js";
 import {
@@ -6,24 +5,19 @@ import {
   captureImage,
   stopCamera,
   dataURLtoFile,
-} from "../camera.js";
-import { getToken } from "../utils/auth.js";
+} from "/js/camera.js";
+import { initMap, addMarker, onMapClick } from "/js/map.js";
 
 export default class AddStoryView {
   constructor() {
     this.presenter = new AddStoryPresenter(this);
     this.stream = null;
-    this.photo = null;
+    this.coordinates = {};
+    this.marker = null;
+    this.map = null;
   }
 
   async init() {
-    const token = getToken();
-    if (!token) {
-      this.showMessage("Silakan login terlebih dahulu!");
-      window.location.hash = "#/login";
-      return;
-    }
-
     const content = createElement("div", { class: "add-story-container" });
     content.innerHTML = `
       <h2>Tambah Cerita Baru</h2>
@@ -34,40 +28,65 @@ export default class AddStoryView {
         </div>
         <div class="form-group">
           <label for="photo">Foto</label>
-          <video id="camera" autoplay playsinline></video>
-          <button type="button" id="capture" aria-label="Ambil foto menggunakan kamera">Ambil Foto</button>
+          <video id="camera" autoplay></video>
+          <button type="button" id="capture">Ambil Foto</button>
           <canvas id="canvas" style="display:none;"></canvas>
-          <img id="preview" style="max-width: 100%; display:none;" alt="Pratinjau Foto" />
         </div>
         <div class="form-group">
           <label for="map">Pilih Lokasi</label>
           <div id="map" style="height: 300px;"></div>
         </div>
-        <button type="submit" aria-label="Kirim cerita baru">Kirim Cerita</button>
+        <button type="submit">Kirim Cerita</button>
       </form>
+      <div id="login-section">
+        <h3>Login untuk Mengunggah</h3>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required aria-required="true">
+        </div>
+        <button type="button" id="login-btn">Login</button>
+      </div>
     `;
     document.getElementById("content").innerHTML = "";
     document.getElementById("content").appendChild(content);
 
     const video = document.getElementById("camera");
-    try {
-      this.stream = await startCamera(video);
-    } catch (error) {
-      this.showMessage(
-        "Gagal mengakses kamera: Izin ditolak. Silakan izinkan akses kamera di pengaturan browser."
-      );
-      return;
-    }
+    this.stream = await startCamera(video);
 
-    this.presenter.initMap("map");
+    this.map = initMap("map");
+    if (this.map) {
+      this.marker = addMarker(this.map, -6.2, 106.8, "Pilih lokasi");
+      if (this.marker) {
+        this.marker.setPopupContent(
+          "Geser marker atau klik peta untuk memilih lokasi"
+        );
+        this.marker.dragging.enable();
+        this.coordinates = { lat: -6.2, lon: 106.8 };
+
+        this.marker.on("moveend", (e) => {
+          const { lat, lng } = e.target.getLatLng();
+          this.coordinates = { lat, lon: lng };
+        });
+
+        onMapClick(this.map, (lat, lon) => {
+          this.coordinates = { lat, lon };
+          this.marker.setLatLng([lat, lon]);
+        });
+      } else {
+        console.error("Failed to create marker: addMarker returned undefined");
+      }
+    } else {
+      console.error("Failed to initialize map: initMap returned undefined");
+    }
 
     document.getElementById("capture").addEventListener("click", async () => {
       const canvas = document.getElementById("canvas");
-      const preview = document.getElementById("preview");
       const dataURL = captureImage(video, canvas);
       this.photo = dataURLtoFile(dataURL, "story.jpg");
-      preview.src = dataURL;
-      preview.style.display = "block";
     });
 
     document
@@ -75,20 +94,35 @@ export default class AddStoryView {
       .addEventListener("submit", async (e) => {
         e.preventDefault();
         const description = document.getElementById("description").value;
-        if (!this.photo) {
-          this.showMessage("Silakan ambil foto terlebih dahulu!");
-          return;
-        }
-        const { lat, lon } = this.presenter.getCoordinates();
+        const token = localStorage.getItem("token");
+        const { lat, lon } = this.coordinates;
         await this.presenter.addStory(description, this.photo, lat, lon, token);
       });
+
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      await this.presenter.login({ email, password });
+    });
   }
 
   stopCamera() {
     stopCamera(this.stream);
+    this.stream = null;
+  }
+
+  cleanup() {
+    if (this.stream) {
+      this.stopCamera();
+      console.log("Camera stream stopped on cleanup"); // Tambahkan log untuk debugging
+    }
   }
 
   showMessage(message) {
     alert(message);
+  }
+
+  navigateToHome() {
+    window.location.hash = "#/home";
   }
 }
