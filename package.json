@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "start": "vite preview",
-    "build": "vite build",
+    "build": "vite build && workbox generateSW workbox-config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,9 +14,12 @@
   "description": "",
   "devDependencies": {
     "http-server": "^14.1.1",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "workbox-cli": "^7.0.0"
   },
   "dependencies": {
-    "leaflet": "^1.9.4"
+    "idb": "^8.0.0",
+    "leaflet": "^1.9.4",
+    "workbox-window": "^7.0.0"
   }
 }

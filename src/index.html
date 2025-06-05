@@ -1,4 +1,3 @@
-<!-- src/index.html -->
 <!DOCTYPE html>
 <html lang="id">
   <head>
@@ -16,25 +15,22 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
     <meta name="description" content="Aplikasi berbagi cerita Dicoding" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4361ee" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
   </head>
   <body>
-    <a href="#main-content" class="skip-to-content" tabindex="1"
-      >Lewati ke konten</a
-    >
+    <a href="#main-content" class="skip-to-content" tabindex="1">Lewati ke konten</a>
     <header role="banner">
       <h1>Dicoding Story</h1>
       <nav role="navigation">
         <ul>
           <li><a href="#/home" aria-label="Ke halaman beranda">Beranda</a></li>
           <li>
-            <a href="#/add-story" aria-label="Tambah cerita baru"
-              >Tambah Cerita</a
-            >
+            <a href="#/add-story" aria-label="Tambah cerita baru">Tambah Cerita</a>
           </li>
           <li>
-            <a href="#/login" id="login-link" aria-label="Masuk ke akun"
-              >Login</a
-            >
+            <a href="#/login" id="login-link" aria-label="Masuk ke akun">Login</a>
           </li>
           <li>
             <a href="#/register" aria-label="Daftar akun baru">Register</a>
@@ -45,8 +41,7 @@
               id="logout-link"
               style="display: none"
               aria-label="Keluar dari akun"
-              >Logout</a
-            >
+            >Logout</a>
           </li>
         </ul>
       </nav>
@@ -57,18 +52,6 @@
     <footer role="contentinfo">
       <p>© 2025 Dicoding Story App</p>
     </footer>
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/sw.js")
-          .then(() => {
-            console.log("Service Worker registered");
-          })
-          .catch((error) => {
-            console.error("Service Worker registration failed:", error);
-          });
-      }
-    </script>
     <script type="module" src="/js/main.js"></script>
   </body>
 </html>
