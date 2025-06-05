@@ -1,6 +1,6 @@
 // src/js/views/home.js
-import HomePresenter from "../presenters/home-presenter.js"; // dari src/js/views/ ke src/js/presenters/home-presenter.js
-import { createElement } from "../utils/dom.js"; // dari src/js/views/ ke src/js/utils/dom.js
+import HomePresenter from "../presenters/home-presenter.js";
+import { createElement } from "../utils/dom.js";
 
 export default class HomeView {
   constructor() {
@@ -8,11 +8,21 @@ export default class HomeView {
   }
 
   async init() {
-    const content = createElement("div", { class: "home-container" });
+    const content = createElement("div", { 
+      class: "home-container",
+      role: "region",
+      "aria-label": "Daftar cerita"
+    });
+    
     content.innerHTML = `
-      <h2>Daftar Cerita</h2>
-      <div id="story-list"></div>
+      <h2 id="story-list-title">Daftar Cerita</h2>
+      <div 
+        id="story-list" 
+        role="feed" 
+        aria-labelledby="story-list-title"
+      ></div>
     `;
+    
     document.getElementById("content").innerHTML = "";
     document.getElementById("content").appendChild(content);
 
@@ -22,22 +32,43 @@ export default class HomeView {
   displayStories(stories) {
     const storyList = document.getElementById("story-list");
     storyList.innerHTML = "";
+    
     stories.forEach((story) => {
-      const storyItem = createElement("div", { class: "story-item" });
+      const storyItem = createElement("div", { 
+        class: "story-item",
+        role: "article"
+      });
+      
       storyItem.innerHTML = `
         <h3>${story.name}</h3>
         <p>${story.description}</p>
-        <img src="${story.photoUrl}" alt="Foto cerita" style="max-width: 100%;">
-        <p>Dibuat pada: ${new Date(story.createdAt).toLocaleDateString()}</p>
+        <img 
+          src="${story.photoUrl}" 
+          alt="Foto untuk cerita: ${story.description.substring(0, 50)}..." 
+          loading="lazy"
+        >
+        <p>Dibuat pada: ${new Date(story.createdAt).toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}</p>
         ${
           story.lat && story.lon
-            ? `<div id="map-${story.id}" style="height: 200px;"></div>`
+            ? `<div 
+                id="map-${story.id}" 
+                class="story-map" 
+                role="complementary" 
+                aria-label="Lokasi cerita di peta"
+              ></div>`
             : ""
         }
-        <a href="#/detail/${
-          story.id
-        }" aria-label="Lihat detail cerita">Lihat Detail</a>
+        <a 
+          href="#/detail/${story.id}" 
+          class="detail-link"
+          aria-label="Lihat detail cerita dari ${story.name}"
+        >Lihat Detail</a>
       `;
+      
       storyList.appendChild(storyItem);
 
       if (story.lat && story.lon) {
@@ -54,9 +85,12 @@ export default class HomeView {
   showMessage(message, retryCallback) {
     const storyList = document.getElementById("story-list");
     storyList.innerHTML = `
-      <p>${message}</p>
-      ${retryCallback ? '<button id="retry-btn">Coba Lagi</button>' : ""}
+      <div role="alert">
+        <p>${message}</p>
+        ${retryCallback ? '<button id="retry-btn" class="retry-button">Coba Lagi</button>' : ""}
+      </div>
     `;
+    
     if (retryCallback) {
       document
         .getElementById("retry-btn")
